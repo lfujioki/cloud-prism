@@ -43,7 +43,6 @@ public class InvoiceCreationQueueableTest {
         Id jobId = System.enqueueJob(new InvoiceCreationQueueable(trainings));
         Test.stopTest();
 
-        Assert.isNotNull(jobId);
         AsyncApexJob job = [SELECT Id, Status, JobType, ApexClass.Name FROM AsyncApexJob WHERE Id = :jobId];
 
         Assert.areEqual('Completed', job.Status);

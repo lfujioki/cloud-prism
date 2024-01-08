@@ -9,7 +9,7 @@ public with sharing class TrainingInvoiceService {
      * @param newlist   List of training invoices
      * @param oldMap    Old map of training invoices, always null
      */
-    public void createInvoiceLineItemsFromTrainingLineItems(
+    public void insertInvoiceLineItemsFromTraining(
         List<TrainingInvoice__c> newList, 
         Map<Id, TrainingInvoice__c> oldMap
     ) {

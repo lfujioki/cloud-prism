@@ -39,6 +39,39 @@ public with sharing class TrainingLineItemService {
     }
 
     /**
+     * This method is part of the Training price calculation process. It is
+     * invoked from the afterInsert method on the trigger handler class,
+     * "TrainingLineItemTriggerHandler." It adds product line item prices and
+     * taxes and updates the respective fields on trainings.
+     * 
+     * @param newlist   List of training line items
+     * @param oldMap    Old map of training line items, always null
+     */
+    public void calculateTotalPriceAndTaxOnTrainings(List<TrainingLineItem__c> newList, Map<Id, TrainingLineItem__c> oldMap) {
+        Set<Id> trainingIds = new Set<Id>();
+
+        for(TrainingLineItem__c trainingLineItem : newList) {
+            trainingIds.add(trainingLineItem.Training__c);
+        }
+
+        List<Training__c> trainingsWithLineItems = TrainingQueries.queryTrainingsWithLineItemsById(trainingIds);
+
+        for(Training__c training : trainingsWithLineItems) {
+            training.TotalPrice__c = 0.0;
+            training.TotalTax__c = 0.0;
+
+            for(TrainingLineItem__c trainingLineItem : training.TrainingLineItems__r) {
+                training.TotalPrice__c += trainingLineItem.Price__c;
+                training.TotalTax__c += trainingLineItem.Tax__c;
+            }
+        }
+
+        if(!trainingsWithLineItems.isEmpty()) {
+            update trainingsWithLineItems;
+        }
+    }
+
+    /**
      * This method is part of the Training product management process. It is
      * invoked from the beforeUpdate method on the trigger handler class,
      * "TrainingLineItemTriggerHandler." If the selected product is changed, it
@@ -85,39 +118,6 @@ public with sharing class TrainingLineItemService {
         lineItem.Price__c = product.ProductPrice__c;
 
         return lineItem;
-    }
-
-    /**
-     * This method is part of the Training price calculation process. It is
-     * invoked from the afterInsert method on the trigger handler class,
-     * "TrainingLineItemTriggerHandler." It adds product line item prices and
-     * taxes and updates the respective fields on trainings.
-     * 
-     * @param newlist   List of training line items
-     * @param oldMap    Old map of training line items, always null
-     */
-    public void calculateTotalPriceAndTaxOnTrainings(List<TrainingLineItem__c> newList, Map<Id, TrainingLineItem__c> oldMap) {
-        Set<Id> trainingIds = new Set<Id>();
-
-        for(TrainingLineItem__c trainingLineItem : newList) {
-            trainingIds.add(trainingLineItem.Training__c);
-        }
-
-        List<Training__c> trainingsWithLineItems = TrainingQueries.queryTrainingsWithLineItemsById(trainingIds);
-
-        for(Training__c training : trainingsWithLineItems) {
-            training.TotalPrice__c = 0.0;
-            training.TotalTax__c = 0.0;
-
-            for(TrainingLineItem__c trainingLineItem : training.TrainingLineItems__r) {
-                training.TotalPrice__c += trainingLineItem.Price__c;
-                training.TotalTax__c += trainingLineItem.Tax__c;
-            }
-        }
-
-        if(!trainingsWithLineItems.isEmpty()) {
-            update trainingsWithLineItems;
-        }
     }
 
     /**

@@ -35,7 +35,7 @@ public class RefundPostProcessingQueueableTest {
         insert invoice;
 
         TrainingRefund__c refund = new TrainingRefund__c();
-        refund.TrainingInvoice__r = new TrainingInvoice__c(InvoiceId__c = invoice.InvoiceId__c );
+        refund.TrainingInvoice__r = new TrainingInvoice__c(InvoiceId__c = invoice.InvoiceId__c);
         refund.Amount__c = 190;
         refund.Participant__c = participant1.Id;
         refund.Reason__c = 'Technical Issues';
@@ -59,12 +59,10 @@ public class RefundPostProcessingQueueableTest {
     
         TrainingInvoice__c updatedInvoice = TrainingInvoiceQueries.queryInvoiceByInvoiceId(invoiceId);
 
-        Assert.isNotNull(updatedInvoice);
         Assert.areEqual(refundedStatus, updatedInvoice.Status__c);
 
         TrainingRefund__c updatedRefund = TrainingRefundQueries.queryRefundByRefundId(refundId);
 
-        Assert.isNotNull(updatedRefund);
         Assert.areEqual(refundedStatus, updatedRefund.Status__c);
     }
 
@@ -82,7 +80,6 @@ public class RefundPostProcessingQueueableTest {
 
         TrainingRefund__c updatedRefund = TrainingRefundQueries.queryRefundByRefundId(refundId);
         
-        Assert.isNotNull(updatedRefund);
         Assert.areEqual(failedStatus, updatedRefund.Status__c);
 
         List<ErrorLog__c> errorLogs = [
@@ -91,7 +88,6 @@ public class RefundPostProcessingQueueableTest {
             WHERE ExceptionType__c = 'Refund Order Failed'
         ];
 
-        Assert.isNotNull(errorLogs);
         Assert.areEqual(1, errorLogs.size());
 
         ErrorLog__c resultLog = errorLogs.get(0);

@@ -10,7 +10,7 @@ private class RefundPollingQueueableTest {
         insert restaurant;
 
         Training__c training = new Training__c();
-        training.Name = 'Test Trigger Training';
+        training.Name = 'Test Training';
         training.Restaurant__c = restaurant.Id;
         training.StartDate__c = System.today().addMonths(1);
         training.EndDate__c = System.today().addMonths(1);
@@ -31,7 +31,7 @@ private class RefundPollingQueueableTest {
         insert invoice;
 
         TrainingRefund__c refund = new TrainingRefund__c();
-        refund.TrainingInvoice__r = new TrainingInvoice__c(InvoiceId__c = invoice.InvoiceId__c );
+        refund.TrainingInvoice__r = new TrainingInvoice__c(InvoiceId__c = invoice.InvoiceId__c);
         refund.Amount__c = 190;
         refund.Participant__c = participant.Id;
         refund.Reason__c = 'Technical Issues';
@@ -60,7 +60,6 @@ private class RefundPollingQueueableTest {
 
         AsyncApexJob job = [SELECT Id, Status, JobType, ApexClass.Name FROM AsyncApexJob WHERE Id = :jobId];
 
-        Assert.isNotNull(job);
         Assert.areEqual('RefundPollingQueueable', job.ApexClass.Name);
         Assert.areEqual('Completed', job.Status);
         Assert.areEqual('Queueable', job.JobType);
@@ -86,7 +85,6 @@ private class RefundPollingQueueableTest {
 
         AsyncApexJob job = [SELECT Id, Status, JobType, ApexClass.Name FROM AsyncApexJob WHERE Id = :jobId];
 
-        Assert.isNotNull(job);
         Assert.areEqual('RefundPollingQueueable', job.ApexClass.Name);
         Assert.areEqual('Completed', job.Status);
         Assert.areEqual('Queueable', job.JobType);
@@ -113,7 +111,6 @@ private class RefundPollingQueueableTest {
 
         AsyncApexJob job = [SELECT Id, Status, JobType, ApexClass.Name FROM AsyncApexJob WHERE Id = :jobId];
 
-        Assert.isNotNull(job);
         Assert.areEqual('RefundPollingQueueable', job.ApexClass.Name);
         Assert.areEqual('Completed', job.Status);
         Assert.areEqual('Queueable', job.JobType);
@@ -137,7 +134,6 @@ private class RefundPollingQueueableTest {
 
         TrainingRefund__c updatedRefund = TrainingRefundQueries.queryRefundByRefundId(refundId);
 
-        Assert.isNotNull(updatedRefund);
         Assert.areEqual(RefundPostProcessingQueueable.REFUND_STATUS_FAILED, updatedRefund.Status__c);
 
         List<ErrorLog__c> errorLogs = [
@@ -146,7 +142,6 @@ private class RefundPollingQueueableTest {
             WHERE ClassName__c = 'RefundPollingQueueable'
         ];
 
-        Assert.isNotNull(errorLogs);
         Assert.areEqual(1, errorLogs.size());
 
         ErrorLog__c resultLog = errorLogs.get(0);

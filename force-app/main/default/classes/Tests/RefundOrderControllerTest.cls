@@ -52,7 +52,6 @@ private class RefundOrderControllerTest {
 
         List<TrainingRefund__c> refunds = [SELECT Status__c, RefundId__c FROM TrainingRefund__c];
 
-        Assert.isNotNull(refunds);
         Assert.areEqual(1, refunds.size());
 
         TrainingRefund__c refund = refunds.get(0);

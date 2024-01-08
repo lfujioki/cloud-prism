@@ -14,6 +14,8 @@ public with sharing class ParticipantServiceTest {
         training.Restaurant__c = restaurant.Id;
         training.StartDate__c = System.today().addMonths(1);
         training.EndDate__c = System.today().addMonths(1);
+        training.TotalPrice__c = 120.00;
+        training.TotalTax__c = 22.80;
         insert training;
 
         Contact contact1 = new Contact(LastName = 'Participant-One', CanBookForOthers__c = true, Email = 'e@mail.com');
@@ -25,6 +27,14 @@ public with sharing class ParticipantServiceTest {
         Participant__c participant2 = new Participant__c(Contact__c = contact2.Id, Training__c = training.Id);
         List<Participant__c> participants = new List<Participant__c> {participant1, participant2};
         insert participants;
+
+        TrainingInvoice__c invoice = new TrainingInvoice__c();
+        invoice.InvoiceDate__c = System.today();
+        invoice.InvoiceId__c = '657c33e3c01b55ac1cfd6f59';
+        invoice.Status__c = InvoicePostProcessingQueueable.INVOICE_STATUS_CREATED;
+        invoice.Participant__c = participant1.Id;
+        invoice.Training__c = participant1.Training__c;
+        insert invoice;
     }
 
     @IsTest
@@ -127,14 +137,6 @@ public with sharing class ParticipantServiceTest {
 
         Participant__c participant = [SELECT Id, Training__c, Contact__c FROM Participant__c LIMIT 1];
 
-        TrainingInvoice__c invoice = new TrainingInvoice__c();
-        invoice.InvoiceDate__c = System.today();
-        invoice.InvoiceId__c = '657c33e3c01b55ac1cfd6f59';
-        invoice.Status__c = InvoicePostProcessingQueueable.INVOICE_STATUS_CREATED;
-        invoice.Participant__c = participant.Id;
-        invoice.Training__c = participant.Training__c;
-        insert invoice;
-
         Test.startTest();
         String invoiceName = new ParticipantService().initiateRefundOrder(participant.Id, 'Billing Error');
         Test.stopTest();
@@ -143,7 +145,6 @@ public with sharing class ParticipantServiceTest {
 
         List<TrainingRefund__c> refunds = [SELECT Status__c, RefundId__c FROM TrainingRefund__c];
 
-        Assert.isNotNull(refunds);
         Assert.areEqual(1, refunds.size());
 
         TrainingRefund__c refund = refunds.get(0);
@@ -152,7 +153,6 @@ public with sharing class ParticipantServiceTest {
 
         List<AsyncApexJob> jobs = [SELECT Id, Status, JobType FROM AsyncApexJob WHERE ApexClass.Name = 'RefundPollingQueueable'];
 
-        Assert.isNotNull(jobs);
         Assert.areEqual(1, jobs.size());
 
         AsyncApexJob job = jobs.get(0);
@@ -226,7 +226,7 @@ public with sharing class ParticipantServiceTest {
 
     @IsTest
     static void queryTrainingsForNewParticipantsByParticipantIds_UnitTest() {
-        Integer expectedParticipantsSize = 1;
+        Integer expectedParticipantSize = 1;
         Training__c training = [SELECT Id, Name FROM Training__c];
 
         Contact newContact = new Contact(LastName = 'New-Student', CanBookForOthers__c = true, Email = 'new@mail.com');
@@ -246,8 +246,21 @@ public with sharing class ParticipantServiceTest {
         Test.stopTest();
 
         Training__c result = trainings.get(0);
-        Assert.areEqual(expectedParticipantsSize, result.Participants__r.size());
+        Assert.areEqual(expectedParticipantSize, result.Participants__r.size());
         Assert.areEqual(newContact.LastName, result.Participants__r.get(0).Contact__r.LastName);
+    }
+
+
+    @IsTest
+    static void queryInvoiceByParticipantId_UnitTest() {
+        Participant__c participant = [SELECT Id, Name FROM Participant__c LIMIT 1];
+
+        Test.startTest();
+        TrainingInvoice__c invoice = InvoiceQueries.queryInvoiceByParticipantId(participant.Id);
+        Test.stopTest();
+
+        Assert.areEqual('657c33e3c01b55ac1cfd6f59', invoice.InvoiceId__c);
+        Assert.areEqual(participant.Id, invoice.Participant__c);
     }
 
 }
