@@ -75,7 +75,7 @@ public with sharing class TrainingRestServiceTest {
         Assert.isNotNull(trainingId != null);
 
         Training__c insertedTraining = [SELECT Id, Name FROM Training__c WHERE Id = :trainingId];
-        Assert.isNotNull(insertedTraining);
+
         Assert.areEqual('Rest Training Intermediate', insertedTraining.Name);
     }
 
